@@ -30,6 +30,13 @@
       },
       "defaultValue": "10.0.0.4"
     },
+    "nicIPAddressVM": {
+      "type": "string",
+      "metadata": {
+        "description": "The IP address of the new AD VM"
+      },
+      "defaultValue": "10.0.0.5"
+    },
     "adminUsername": {
       "type": "string",
       "metadata": {
@@ -81,6 +88,7 @@
   "variables": {
     "automationAccountName": "[concat('DSC-',take(guid(resourceGroup().id),5))]",
     "publicIPAddressName": "PIP",
+    "publicIPAddressNameVM": "PIPVM",
     "publicIPAddressType": "Dynamic",
     "virtualNetworkName": "Network",
     "virtualNetworkSubnetName": "Subnet",
@@ -95,6 +103,7 @@
     "DCName": "DC",
     "VMName": "Server",
     "nicName": "NIC",
+    "nicNameVM": "NICVM",
     "nicSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('virtualNetworkSubnetName'))]",
     "provisionConfigurationURL": "[uri(parameters('_artifactsLocation'), concat('nested/provisionConfiguration.json', parameters('_artifactsLocationSasToken')))]",
     "provisionNetworkURL": "[uri(parameters('_artifactsLocation'), concat('nested/provisionNetwork.json', parameters('_artifactsLocationSasToken')))]",
@@ -170,11 +179,20 @@
           "nicIPAddress": {
             "value": "[parameters('nicIPAddress')]"
           },
+          "nicNameVM": {
+            "value": "[variables('nicNameVM')]"
+          },
+          "nicIPAddressVM": {
+            "value": "[parameters('nicIPAddressVM')]"
+          },
           "nicSubnetRef": {
             "value": "[variables('nicSubnetRef')]"
           },
           "publicIPAddressName": {
             "value": "[variables('publicIPAddressName')]"
+          },
+          "publicIPAddressNameVM": {
+            "value": "[variables('publicIPAddressNameVM')]"
           },
           "publicIPAddressType": {
             "value": "[variables('publicIPAddressType')]"
@@ -251,7 +269,7 @@
             "value": "[parameters('adminPassword')]"
           },
           "NicName": {
-            "value": "[variables('NicName')]"
+            "value": "[variables('NicNameVM')]"
           },
           "automationAccountName": {
             "value": "[variables('automationAccountName')]"
