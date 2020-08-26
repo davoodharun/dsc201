@@ -92,12 +92,14 @@
         }
       }
     ],
+    "DCName": "Domain Controller",
     "VMName": "Server",
     "nicName": "NIC",
     "nicSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('virtualNetworkSubnetName'))]",
     "provisionConfigurationURL": "[uri(parameters('_artifactsLocation'), concat('nested/provisionConfiguration.json', parameters('_artifactsLocationSasToken')))]",
     "provisionNetworkURL": "[uri(parameters('_artifactsLocation'), concat('nested/provisionNetwork.json', parameters('_artifactsLocationSasToken')))]",
     "provisionServerUrl": "[uri(parameters('_artifactsLocation'), concat('nested/provisionServer.json', parameters('_artifactsLocationSasToken')))]",
+    "provisionVMUrl": "[uri(parameters('_artifactsLocation'), concat('nested/provisionVM.json', parameters('_artifactsLocationSasToken')))]",
     "provisionDNSUrl": "[uri(parameters('_artifactsLocation'), concat('nested/provisionDNS.json', parameters('_artifactsLocationSasToken')))]"
   },
   "resources": [
@@ -199,6 +201,44 @@
             "value": "[parameters('location')]"
           },
           "VMName": {
+            "value": "[variables('DCName')]"
+          },
+          "VMSize": {
+            "value": "[parameters('VMSize')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "NicName": {
+            "value": "[variables('NicName')]"
+          },
+          "automationAccountName": {
+            "value": "[variables('automationAccountName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "provisionVM",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-06-01",
+      "dependsOn": [
+        "provisionServer"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('provisionVMUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "VMName": {
             "value": "[variables('VMName')]"
           },
           "VMSize": {
@@ -224,7 +264,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
-        "provisionServer"
+        "provisionVM"
       ],
       "properties": {
         "mode": "Incremental",
