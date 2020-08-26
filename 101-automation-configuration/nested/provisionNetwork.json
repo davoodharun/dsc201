@@ -29,9 +29,6 @@
     "nicSubnetRef": {
       "type": "string"
     },
-    "nicSubnetRefVM": {
-      "type": "string"
-    },
     "publicIPAddressName": {
       "type": "string"
     },
@@ -125,7 +122,7 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('nicIPAddressVM')]",
               "subnet": {
-                "id": "[parameters('nicSubnetRefVM')]"
+                "id": "[parameters('nicSubnetRef')]"
               },
               "publicIPAddress": {
                 "id": "[resourceId ('Microsoft.Network/publicIPAddresses/', parameters('publicIPAddressNameVM'))]"
