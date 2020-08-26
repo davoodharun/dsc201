@@ -92,7 +92,7 @@
         }
       }
     ],
-    "DCName": "Domain Controller",
+    "DCName": "DomainController",
     "VMName": "Server",
     "nicName": "NIC",
     "nicSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('virtualNetworkSubnetName'))]",
