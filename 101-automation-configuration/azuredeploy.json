@@ -64,7 +64,7 @@
       "defaultValue": "[deployment().properties.templateLink.uri]"
     },
     "_artifactsLocationSasToken": {
-      "type": "securestring",
+      "type": "secureString",
       "metadata": {
         "description": "SAS token to access artifacts location, if required"
       },
