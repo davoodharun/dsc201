@@ -63,48 +63,17 @@ Import-DscResource -ModuleName @{ModuleName = 'xActiveDirectory'; ModuleVersion 
 Import-DscResource -ModuleName @{ModuleName = 'xStorage'; ModuleVersion = '3.4.0.0'}
 Import-DscResource -ModuleName @{ModuleName = 'xPendingReboot'; ModuleVersion = '0.3.0.0'}
 Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
-Import-DscResource -ModuleName 'xNetworking'
-Import-DscResource -Module ComputerManagementDsc
 
 # When using with Azure Automation, modify these values to match your stored credential names
 $domainCredential = Get-AutomationPSCredential 'Credential'
 $safeModeCredential = Get-AutomationPSCredential 'Credential'
-$Interface=Get-NetAdapter|Where Name -Like "Ethernet*"|Select-Object -First 1
-$InterfaceAlias=$($Interface.Name)
 
   node localhost
   {
-    WindowsFeature DNS 
-    { 
-        Ensure = "Present" 
-        Name = "DNS"		
-    }
-    xDnsServerAddress DnsServerAddress 
-    { 
-        Address        = '127.0.0.1' 
-        InterfaceAlias = $InterfaceAlias
-        AddressFamily  = 'IPv4'
-        DependsOn = "[WindowsFeature]DNS"
-    }
     WindowsFeature ADDSInstall
     {
         Ensure = 'Present'
         Name = 'AD-Domain-Services'
-        DependsOn = "[WindowsFeature]DNS"
-    }
-
-    WindowsFeature ADDSTools
-    {
-        Ensure = "Present"
-        Name = "RSAT-ADDS-Tools"
-        DependsOn = "[WindowsFeature]ADDSInstall"
-    }
-
-    WindowsFeature ADAdminCenter
-    {
-        Ensure = "Present"
-        Name = "RSAT-AD-AdminCenter"
-        DependsOn = "[WindowsFeature]ADDSInstall"
     }
     
     xWaitforDisk Disk2
