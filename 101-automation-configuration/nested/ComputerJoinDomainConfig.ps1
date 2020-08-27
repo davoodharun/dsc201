@@ -29,7 +29,7 @@ Configuration ComputerJoinDomainConfig
 
     Import-DscResource -Module ComputerManagementDsc
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
-    $domainCredential = Get-AutomationPSCredential 'Credential'
+    $domainCredential = Get-AutomationPSCredential 'Domain'
     Node localhost
     {
         Computer JoinDomain
