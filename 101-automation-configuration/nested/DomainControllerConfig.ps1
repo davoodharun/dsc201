@@ -149,11 +149,5 @@ $InterfaceAlias=$($Interface.Name)
         Ensure = 'Present'
         DependsOn = '[xADDomain]Domain'
     }
-    RemoteDesktopAdmin RemoteDesktopSettings
-    {
-        IsSingleInstance   = 'yes'
-        Ensure             = 'Present'
-        UserAuthentication = 'Secure'
-    }
   }
 }

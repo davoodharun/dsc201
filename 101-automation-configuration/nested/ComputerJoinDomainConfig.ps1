@@ -38,12 +38,5 @@ Configuration ComputerJoinDomainConfig
             DomainName = 'contoso.local'
             Credential = $domainCredential # Credential to join to domain
         }
-
-        RemoteDesktopAdmin RemoteDesktopSettings
-        {
-            IsSingleInstance   = 'yes'
-            Ensure             = 'Present'
-            UserAuthentication = 'Secure'
-        }
     }
 }
