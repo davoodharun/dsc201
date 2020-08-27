@@ -1,0 +1,303 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure location to deploy all resources"
+      },
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "virtualNetworkAddressRange": {
+      "type": "string",
+      "metadata": {
+        "description": "The address range of the new virtual network "
+      },
+      "defaultValue": "10.0.0.0/16"
+    },
+    "virtualNetworkSubnet": {
+      "type": "string",
+      "metadata": {
+        "description": "The address range of the subnet created in the new virtual network"
+      },
+      "defaultValue": "10.0.0.0/24"
+    },
+    "nicIPAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "The IP address of the new AD VM"
+      },
+      "defaultValue": "10.0.0.4"
+    },
+    "nicIPAddressVM": {
+      "type": "string",
+      "metadata": {
+        "description": "The IP address of the new AD VM"
+      },
+      "defaultValue": "10.0.0.5"
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Administrator of the new VM and Domain"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the Administrator account of the new VM and Domain"
+      }
+    },
+    "VMSize": {
+      "type": "string",
+      "metadata": {
+        "description": "The size of the VM Created"
+      },
+      "defaultValue": "Standard_DS2_V2"
+    },
+    "domainName": {
+      "type": "string",
+      "metadata": {
+        "description": "The full qualified domain name to be created"
+      },
+      "defaultValue": "contoso.local"
+    },
+    "_artifactsLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Path to the nested templates used in this deployment"
+      },
+      "defaultValue": "[deployment().properties.templateLink.uri]"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "secureString",
+      "metadata": {
+        "description": "SAS token to access artifacts location, if required"
+      },
+      "defaultValue": ""
+    },
+    "compileName": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique value to identify compilation job"
+      },
+      "defaultValue": "[guid(resourceGroup().id, deployment().name)]"
+    }
+  },
+  "variables": {
+    "computers": [
+      {
+        "name": "DC",
+        "publicIPAddressName": "DCPIP",
+        "nicName": "DCNIC",
+        "nicIpAddress": "10.0.0.4"
+      },
+      {
+        "name": "VM",
+        "publicIPAddressName": "VMPIP",
+        "nicName": "VMNIC",
+        "nicIpAddress": "10.0.0.5"
+      }
+    ],
+    "automationAccountName": "[concat('DSC-',take(guid(resourceGroup().id),5))]",
+    "publicIPAddressType": "Dynamic",
+    "virtualNetworkName": "Network",
+    "virtualNetworkSubnetName": "Subnet",
+    "virtualNetworkSubnets": [
+      {
+        "name": "[variables('virtualNetworkSubnetName')]",
+        "properties": {
+          "addressPrefix": "[parameters('virtualNetworkSubnet')]"
+        }
+      }
+    ],
+    "nicSubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('virtualNetworkSubnetName'))]"
+  },
+  "resources": [
+    {
+      "name": "VNet",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[parameters('location')]",
+      "apiVersion": "2020-05-01",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('virtualNetworkAddressRange')]"
+          ]
+        },
+        "subnets": "[variables('virtualNetworkSubnets')]"
+      }
+    },
+    {
+      "name": "[variables('computers')[copyIndex()].name]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2020-05-01",
+      "copy": {
+        "name": "publicIp",
+        "count": "[length(variables('computers'))]"
+      },
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "VNet"
+      ],
+      "properties": {
+        "publicIPAllocationMethod": "[variables('publicIPAddressType')]"
+      }
+    },
+    {
+      "name": "[variables('computers')[copyIndex()].nicName]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "copy": {
+        "name": "nic",
+        "count": "[length(variables('computers'))]"
+      },
+      "location": "[parameters('location')]",
+      "apiVersion": "2020-05-01",
+      "dependsOn": [
+        "publicIp"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "privateipconfig",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[variables('computers')[copyIndex()].nicIpAddress]",
+              "subnet": {
+                "id": "[variables('nicSubnetRef')]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId ('Microsoft.Network/publicIPAddresses/', variables('computers')[copyIndex()].publicIPAddressName)]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('automationAccountName')]",
+      "type": "Microsoft.Automation/automationAccounts",
+      "apiVersion": "2020-01-13-preview",
+      "location": "[parameters('location')]",
+      "comments": "Automation account for OMS",
+      "properties": {
+        "sku": {
+          "name": "OMS"
+        }
+      }
+    },
+    {
+      "name": "[variables('computers')[copyIndex()].name]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2020-06-01",
+      "copy": {
+        "name": "computer",
+        "count": "[length(variables('computers'))]"
+      },
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[parameters('automationAccountName')]",
+        "nic"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('VMSize')]"
+        },
+        "osProfile": {
+          "computerName": "[copyIndex()]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2016-Datacenter-Server-Core",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "createOption": "Empty",
+              "diskSizeGB": 100,
+              "lun": 0
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('computers')[copyIndex()].nicName)]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('VMName'),'/OnboardToDSC')]",
+      "apiVersion": "2020-06-01",
+      "copy": {
+        "name": "extensions",
+        "count": "[length(variables('computers'))]"
+      },
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "computer",
+        "[parameters('automationAccountName')]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Powershell",
+        "type": "DSC",
+        "typeHandlerVersion": "2.75",
+        "autoUpgradeMinorVersion": true,
+        "protectedSettings": {
+          "Items": {
+            "registrationKeyPrivate": "[listKeys(resourceId('Microsoft.Automation/automationAccounts/', parameters('automationAccountName')), '2018-01-15').Keys[0].value]"
+          }
+        },
+        "settings": {
+          "Properties": [
+            {
+              "Name": "RegistrationKey",
+              "Value": {
+                "UserName": "PLACEHOLDER_DONOTUSE",
+                "Password": "PrivateSettingsRef:registrationKeyPrivate"
+              },
+              "TypeName": "System.Management.Automation.PSCredential"
+            },
+            {
+              "Name": "RegistrationUrl",
+              "Value": "[reference(resourceId('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))).registrationUrl]",
+              "TypeName": "System.String"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[parameters('virtualNetworkName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[parameters('location')]",
+      "apiVersion": "2020-05-01",
+      "dependsOn": [
+        "computer",
+        "nic"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('virtualNetworkAddressRange')]"
+          ]
+        },
+        "dhcpOptions": {
+          "dnsServers": "[variables('computers')[0].nicIpAddress]"
+        },
+        "subnets": "[variables('virtualNetworkSubnets')]"
+      }
+    }
+  ]
+}
