@@ -201,7 +201,7 @@
       }
     },
     {
-      "name": "provisionServer",
+      "name": "provisionDC",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
@@ -240,11 +240,45 @@
       }
     },
     {
+      "name": "provisionDNS",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-06-01",
+      "dependsOn": [
+        "provisionDC"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('provisionDNSUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "virtualNetworkName": {
+            "value": "[variables('virtualNetworkName')]"
+          },
+          "virtualNetworkAddressRange": {
+            "value": "[parameters('virtualNetworkAddressRange')]"
+          },
+          "virtualNetworkSubnets": {
+            "value": "[variables('virtualNetworkSubnets')]"
+          },
+          "dnsAddress": {
+            "value": [
+              "[parameters('nicIPAddress')]"
+            ]
+          }
+        }
+      }
+    },
+    {
       "name": "provisionVM",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
-        "provisionServer"
+        "provisionDNS"
       ],
       "properties": {
         "mode": "Incremental",
@@ -277,39 +311,5 @@
         }
       }
     },
-    {
-      "name": "provisionDNS",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-06-01",
-      "dependsOn": [
-        "provisionVM"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('provisionDNSUrl')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "virtualNetworkName": {
-            "value": "[variables('virtualNetworkName')]"
-          },
-          "virtualNetworkAddressRange": {
-            "value": "[parameters('virtualNetworkAddressRange')]"
-          },
-          "virtualNetworkSubnets": {
-            "value": "[variables('virtualNetworkSubnets')]"
-          },
-          "dnsAddress": {
-            "value": [
-              "[parameters('nicIPAddress')]"
-            ]
-          }
-        }
-      }
-    }
   ]
 }
