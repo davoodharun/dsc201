@@ -176,7 +176,7 @@
       }
     },
     {
-      "name": "[parameters('automationAccountName')]",
+      "name": "[variables('automationAccountName')]",
       "type": "Microsoft.Automation/automationAccounts",
       "apiVersion": "2020-01-13-preview",
       "location": "[parameters('location')]",
@@ -197,7 +197,7 @@
       },
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[parameters('automationAccountName')]",
+        "[variables('automationAccountName')]",
         "nic"
       ],
       "properties": {
@@ -237,8 +237,8 @@
       }
     },
     {
+      "name": "[concat(variables('computers')[copyIndex()].name,'/OnboardToDSC')]",
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(parameters('VMName'),'/OnboardToDSC')]",
       "apiVersion": "2020-06-01",
       "copy": {
         "name": "extensions",
@@ -247,7 +247,7 @@
       "location": "[parameters('location')]",
       "dependsOn": [
         "computer",
-        "[parameters('automationAccountName')]"
+        "[variables('automationAccountName')]"
       ],
       "properties": {
         "publisher": "Microsoft.Powershell",
@@ -256,7 +256,7 @@
         "autoUpgradeMinorVersion": true,
         "protectedSettings": {
           "Items": {
-            "registrationKeyPrivate": "[listKeys(resourceId('Microsoft.Automation/automationAccounts/', parameters('automationAccountName')), '2018-01-15').Keys[0].value]"
+            "registrationKeyPrivate": "[listKeys(resourceId('Microsoft.Automation/automationAccounts/', variables('automationAccountName')), '2018-01-15').Keys[0].value]"
           }
         },
         "settings": {
@@ -271,7 +271,7 @@
             },
             {
               "Name": "RegistrationUrl",
-              "Value": "[reference(resourceId('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))).registrationUrl]",
+              "Value": "[reference(resourceId('Microsoft.Automation/automationAccounts/', variables('automationAccountName'))).registrationUrl]",
               "TypeName": "System.String"
             }
           ]
