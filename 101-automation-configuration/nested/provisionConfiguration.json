@@ -34,6 +34,11 @@
         "name": "DomainControllerConfig",
         "description": "minimum viable configuration for a domain controller role",
         "script": "nested/DomainControllerConfig.ps1"
+      },
+      "ComputerJoinDomainConfig": {
+        "name": "ComputerJoinDomainConfig",
+        "description": "minimum viable configuration for a domain controller role",
+        "script": "nested/ComputerJoinDomainConfig.ps1"
       }
     },
     "dscResources": {
@@ -139,7 +144,26 @@
             }
           }
         },
-
+        {
+          "name": "[variables('dscConfigurations').ComputerJoinDomainConfig.name]",
+          "type": "configurations",
+          "apiVersion": "2018-06-30",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[parameters('AutomationAccountName')]",
+            "[variables('dscResources').xActiveDirectory.name]",
+            "[variables('dscResources').xStorage.name]",
+            "[variables('dscResources').xPendingReboot.name]",
+            "Credential"
+          ],
+          "properties": {
+            "overwrite": true,
+            "source": {
+              "type": "uri",
+              "value": "[uri(parameters('_artifactsLocation'), concat(variables('dscConfigurations').ComputerJoinDomainConfig.script, parameters('_artifactsLocationSasToken')))]"
+            }
+          }
+        },
         {
           "name": "[parameters('compileName')]",
           "type": "compilationjobs",
@@ -155,6 +179,21 @@
             },
             "parameters": {
               "configurationData": "[concat('{\"AllNodes\":{\"nodename\":\"localhost\",\"domainname\":\"', parameters('domainName'), '\"}}')]"
+            }
+          }
+        },
+        {
+          "name": "ADJOINCompile",
+          "type": "compilationjobs",
+          "apiVersion": "2020-01-13-preview",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[parameters('AutomationAccountName')]",
+            "[variables('dscConfigurations').ComputerJoinDomainConfig.name]"
+          ],
+          "properties": {
+            "configuration": {
+              "name": "[variables('dscConfigurations').ComputerJoinDomainConfig.name]"
             }
           }
         }
