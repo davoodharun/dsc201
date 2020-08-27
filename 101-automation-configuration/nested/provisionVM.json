@@ -25,7 +25,7 @@
     },
     "nodeConfigurationName": {
       "type": "string",
-      "defaultValue": "DomainControllerConfig.localhost"
+      "defaultValue": "ComputerJoinDomainConfig.localhost"
     }
   },
   "resources": [
@@ -116,6 +116,26 @@
             {
               "Name": "RegistrationUrl",
               "Value": "[reference(resourceId('Microsoft.Automation/automationAccounts/', parameters('automationAccountName'))).registrationUrl]",
+              "TypeName": "System.String"
+            },
+            {
+              "Name": "NodeConfigurationName",
+              "Value": "[parameters('nodeConfigurationName')]",
+              "TypeName": "System.String"
+            },
+            {
+              "Name": "ConfigurationMode",
+              "Value": "ApplyandAutoCorrect",
+              "TypeName": "System.String"
+            },
+            {
+              "Name": "RebootNodeIfNeeded",
+              "Value": true,
+              "TypeName": "System.Boolean"
+            },
+            {
+              "Name": "ActionAfterReboot",
+              "Value": "ContinueConfiguration",
               "TypeName": "System.String"
             }
           ]

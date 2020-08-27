@@ -28,6 +28,7 @@ Configuration ComputerJoinDomainConfig
 
 
     Import-DscResource -Module ComputerManagementDsc
+    Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
     $domainCredential = Get-AutomationPSCredential 'Credential'
     Node localhost
     {
@@ -36,6 +37,13 @@ Configuration ComputerJoinDomainConfig
             Name       = 'Server01'
             DomainName = 'contoso.local'
             Credential = $domainCredential # Credential to join to domain
+        }
+
+        RemoteDesktopAdmin RemoteDesktopSettings
+        {
+            IsSingleInstance   = 'yes'
+            Ensure             = 'Present'
+            UserAuthentication = 'Secure'
         }
     }
 }

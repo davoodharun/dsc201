@@ -53,6 +53,10 @@
       "xPendingReboot": {
         "name": "xPendingReboot",
         "url": "https://devopsgallerystorage.blob.core.windows.net/packages/xpendingreboot.0.3.0.nupkg"
+      },
+      "xNetworking": {
+        "name": "xNetworking",
+        "url": "https://devopsgallerystorage.blob.core.windows.net/packages/xnetworking.5.7.0.nupkg"
       }
     }
   },
@@ -98,6 +102,20 @@
           }
         },
         {
+          "name": "[variables('dscResources').xNetworking.name]",
+          "type": "modules",
+          "apiVersion": "2020-01-13-preview",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[parameters('AutomationAccountName')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "[variables('dscResources').xNetworking.url]"
+            }
+          }
+        },
+        {
           "name": "[variables('dscResources').xPendingReboot.name]",
           "type": "modules",
           "apiVersion": "2020-01-13-preview",
@@ -133,6 +151,7 @@
             "[parameters('AutomationAccountName')]",
             "[variables('dscResources').xActiveDirectory.name]",
             "[variables('dscResources').xStorage.name]",
+            "[variables('dscResources').xNetworking.name]",
             "[variables('dscResources').xPendingReboot.name]",
             "Credential"
           ],
@@ -153,6 +172,7 @@
             "[parameters('AutomationAccountName')]",
             "[variables('dscResources').xActiveDirectory.name]",
             "[variables('dscResources').xStorage.name]",
+            "[variables('dscResources').xNetworking.name]",
             "[variables('dscResources').xPendingReboot.name]",
             "Credential"
           ],
