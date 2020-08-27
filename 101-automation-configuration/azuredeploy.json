@@ -201,7 +201,7 @@
       }
     },
     {
-      "name": "provisionDC",
+      "name": "provisionServer",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
@@ -244,7 +244,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
-        "provisionDC"
+        "provisionServer"
       ],
       "properties": {
         "mode": "Incremental",
