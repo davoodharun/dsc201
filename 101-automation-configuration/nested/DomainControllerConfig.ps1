@@ -74,17 +74,23 @@ $InterfaceAlias=$($Interface.Name)
 
   node localhost
   {
+    WindowsFeature DNS 
+    { 
+        Ensure = "Present" 
+        Name = "DNS"		
+    }
     xDnsServerAddress DnsServerAddress 
     { 
         Address        = '127.0.0.1' 
         InterfaceAlias = $InterfaceAlias
         AddressFamily  = 'IPv4'
-      DependsOn = "[WindowsFeature]DNS"
+        DependsOn = "[WindowsFeature]DNS"
     }
     WindowsFeature ADDSInstall
     {
         Ensure = 'Present'
         Name = 'AD-Domain-Services'
+        DependsOn = "[WindowsFeature]DNS"
     }
 
     WindowsFeature ADDSTools
@@ -143,12 +149,11 @@ $InterfaceAlias=$($Interface.Name)
         Ensure = 'Present'
         DependsOn = '[xADDomain]Domain'
     }
-  }
-
-  RemoteDesktopAdmin RemoteDesktopSettings
-  {
-      IsSingleInstance   = 'yes'
-      Ensure             = 'Present'
-      UserAuthentication = 'Secure'
+    RemoteDesktopAdmin RemoteDesktopSettings
+    {
+        IsSingleInstance   = 'yes'
+        Ensure             = 'Present'
+        UserAuthentication = 'Secure'
+    }
   }
 }
