@@ -186,63 +186,66 @@
         "sku": {
           "name": "OMS"
         }
-      }
-    },
-    {
-      "name": "xActiveDirectory",
-      "type": "modules",
-      "apiVersion": "2020-01-13-preview",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('automationAccountName')]"
-      ],
-      "properties": {
-        "contentLink": {
-          "uri": "[variables('dscResources').xActiveDirectory.url]"
+      },
+      "resources": [
+        {
+          "name": "[variables('dscResources').xActiveDirectory.name]",
+          "type": "modules",
+          "apiVersion": "2020-01-13-preview",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[variables('automationAccountName')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "[variables('dscResources').xActiveDirectory.url]"
+            }
+          }
+        },
+        {
+          "name": "[variables('dscResources').xStorage.name]",
+          "type": "modules",
+          "apiVersion": "2020-01-13-preview",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[variables('automationAccountName')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "[variables('dscResources').xStorage.url]"
+            }
+          }
+        },
+        {
+          "name": "[variables('dscResources').xPendingReboot.name]",
+          "type": "modules",
+          "apiVersion": "2020-01-13-preview",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[variables('automationAccountName')]"
+          ],
+          "properties": {
+            "contentLink": {
+              "uri": "[variables('dscResources').xPendingReboot.url]"
+            }
+          }
+        },
+        {
+          "name": "DomainCredential",
+          "type": "credentials",
+          "apiVersion": "2020-01-13-preview",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[variables('automationAccountName')]"
+          ],
+          "properties": {
+            "userName": "[parameters('adminUsername')]",
+            "password": "[parameters('adminPassword')]"
+          }
         }
-      }
+      ]
     },
-    {
-      "name": "xStorage",
-      "type": "modules",
-      "apiVersion": "2020-01-13-preview",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('automationAccountName')]"
-      ],
-      "properties": {
-        "contentLink": {
-          "uri": "[variables('dscResources').xStorage.url]"
-        }
-      }
-    },
-    {
-      "name": "xPendingReboot",
-      "type": "modules",
-      "apiVersion": "2020-01-13-preview",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('automationAccountName')]"
-      ],
-      "properties": {
-        "contentLink": {
-          "uri": "[variables('dscResources').xPendingReboot.url]"
-        }
-      }
-    },
-    {
-      "name": "DomainCredential",
-      "type": "credentials",
-      "apiVersion": "2020-01-13-preview",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[variables('automationAccountName')]"
-      ],
-      "properties": {
-        "userName": "[parameters('adminUsername')]",
-        "password": "[parameters('adminPassword')]"
-      }
-    },
+   
     {
       "name": "[variables('computers')[copyIndex()].name]",
       "type": "Microsoft.Compute/virtualMachines",
