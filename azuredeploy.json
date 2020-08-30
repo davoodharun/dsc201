@@ -189,7 +189,7 @@
       }
     },
     {
-      "name": "[variables('dscResources').xActiveDirectory.name]",
+      "name": "xActiveDirectory",
       "type": "modules",
       "apiVersion": "2020-01-13-preview",
       "location": "[parameters('location')]",
@@ -203,7 +203,7 @@
       }
     },
     {
-      "name": "[variables('dscResources').xStorage.name]",
+      "name": "xStorage",
       "type": "modules",
       "apiVersion": "2020-01-13-preview",
       "location": "[parameters('location')]",
@@ -217,7 +217,7 @@
       }
     },
     {
-      "name": "[variables('dscResources').xPendingReboot.name]",
+      "name": "xPendingReboot",
       "type": "modules",
       "apiVersion": "2020-01-13-preview",
       "location": "[parameters('location')]",
