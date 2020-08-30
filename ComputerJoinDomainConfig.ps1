@@ -25,18 +25,27 @@
 #>
 Configuration ComputerJoinDomainConfig
 {
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [PSCredential] $DomainMembership_Credential,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [String] $DomainMembership_DomainName
+    )
 
 
     Import-DscResource -Module ComputerManagementDsc
     Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
-    $domainCredential = Get-AutomationPSCredential 'Domain'
+
     Node localhost
     {
         Computer JoinDomain
         {
-            Name       = 'Server01'
-            DomainName = 'contoso.local'
-            Credential = $domainCredential # Credential to join to domain
+            Name       = 'DC'
+            DomainName = $DomainMembership_DomainName
+            Credential = $DomainMembership_Credential # Credential to join to domain
         }
     }
 }

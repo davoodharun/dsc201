@@ -63,20 +63,6 @@
       },
       "defaultValue": "contoso.local"
     },
-    "_artifactsLocation": {
-      "type": "string",
-      "metadata": {
-        "description": "Path to the nested templates used in this deployment"
-      },
-      "defaultValue": "[deployment().properties.templateLink.uri]"
-    },
-    "_artifactsLocationSasToken": {
-      "type": "secureString",
-      "metadata": {
-        "description": "SAS token to access artifacts location, if required"
-      },
-      "defaultValue": ""
-    },
     "compileName": {
       "type": "string",
       "metadata": {
@@ -100,6 +86,20 @@
         "nicIpAddress": "10.0.0.5"
       }
     ],
+    "dscResources": {
+      "xActiveDirectory": {
+        "name": "xActiveDirectory",
+        "url": "https://devopsgallerystorage.blob.core.windows.net/packages/xactivedirectory.2.17.0.nupkg"
+      },
+      "xStorage": {
+        "name": "xStorage",
+        "url": "https://devopsgallerystorage.blob.core.windows.net/packages/xstorage.3.4.0.nupkg"
+      },
+      "xPendingReboot": {
+        "name": "xPendingReboot",
+        "url": "https://devopsgallerystorage.blob.core.windows.net/packages/xpendingreboot.0.3.0.nupkg"
+      }
+    },
     "automationAccountName": "[concat('DSC-',take(guid(resourceGroup().id),5))]",
     "publicIPAddressType": "Dynamic",
     "virtualNetworkName": "Network",
@@ -116,7 +116,7 @@
   },
   "resources": [
     {
-      "name": "VNet",
+      "name": "[variables('virtualNetworkName')]",
       "type": "Microsoft.Network/virtualNetworks",
       "location": "[parameters('location')]",
       "apiVersion": "2020-05-01",
@@ -130,7 +130,7 @@
       }
     },
     {
-      "name": "[variables('computers')[copyIndex()].name]",
+      "name": "[variables('computers')[copyIndex()].publicIPAddressName]",
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2020-05-01",
       "copy": {
@@ -139,7 +139,7 @@
       },
       "location": "[parameters('location')]",
       "dependsOn": [
-        "VNet"
+        "[variables('virtualNetworkName')]"
       ],
       "properties": {
         "publicIPAllocationMethod": "[variables('publicIPAddressType')]"
@@ -155,7 +155,8 @@
       "location": "[parameters('location')]",
       "apiVersion": "2020-05-01",
       "dependsOn": [
-        "publicIp"
+        "publicIp",
+        "[variables('virtualNetworkName')]"
       ],
       "properties": {
         "ipConfigurations": [
@@ -188,6 +189,61 @@
       }
     },
     {
+      "name": "[variables('dscResources').xActiveDirectory.name]",
+      "type": "modules",
+      "apiVersion": "2020-01-13-preview",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('automationAccountName')]"
+      ],
+      "properties": {
+        "contentLink": {
+          "uri": "[variables('dscResources').xActiveDirectory.url]"
+        }
+      }
+    },
+    {
+      "name": "[variables('dscResources').xStorage.name]",
+      "type": "modules",
+      "apiVersion": "2020-01-13-preview",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('automationAccountName')]"
+      ],
+      "properties": {
+        "contentLink": {
+          "uri": "[variables('dscResources').xStorage.url]"
+        }
+      }
+    },
+    {
+      "name": "[variables('dscResources').xPendingReboot.name]",
+      "type": "modules",
+      "apiVersion": "2020-01-13-preview",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('automationAccountName')]"
+      ],
+      "properties": {
+        "contentLink": {
+          "uri": "[variables('dscResources').xPendingReboot.url]"
+        }
+      }
+    },
+    {
+      "name": "DomainCredential",
+      "type": "credentials",
+      "apiVersion": "2020-01-13-preview",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[variables('automationAccountName')]"
+      ],
+      "properties": {
+        "userName": "[parameters('adminUsername')]",
+        "password": "[parameters('adminPassword')]"
+      }
+    },
+    {
       "name": "[variables('computers')[copyIndex()].name]",
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2020-06-01",
@@ -205,7 +261,7 @@
           "vmSize": "[parameters('VMSize')]"
         },
         "osProfile": {
-          "computerName": "[copyIndex()]",
+          "computerName": "[variables('computers')[copyIndex()].name]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -242,7 +298,8 @@
       "apiVersion": "2020-06-01",
       "copy": {
         "name": "extensions",
-        "count": "[length(variables('computers'))]"
+        "count": "[length(variables('computers'))]",
+        "mode": "Serial"
       },
       "location": "[parameters('location')]",
       "dependsOn": [
@@ -279,25 +336,44 @@
       }
     },
     {
-      "name": "[parameters('virtualNetworkName')]",
-      "type": "Microsoft.Network/virtualNetworks",
-      "location": "[parameters('location')]",
-      "apiVersion": "2020-05-01",
+      "apiVersion": "2015-01-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "updateVNet",
       "dependsOn": [
         "computer",
         "nic"
       ],
       "properties": {
-        "addressSpace": {
-          "addressPrefixes": [
-            "[parameters('virtualNetworkAddressRange')]"
-          ]
+        "expressionEvaluationOptions": {
+          "scope": "outer"
         },
-        "dhcpOptions": {
-          "dnsServers": "[variables('computers')[0].nicIpAddress]"
-        },
-        "subnets": "[variables('virtualNetworkSubnets')]"
-      }
+        "mode": "Incremental",
+        "parameters": {},
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "name": "[variables('virtualNetworkName')]",
+              "type": "Microsoft.Network/virtualNetworks",
+              "location": "[parameters('location')]",
+              "apiVersion": "2020-05-01",
+              "properties": {
+                "addressSpace": {
+                  "addressPrefixes": [
+                    "[parameters('virtualNetworkAddressRange')]"
+                  ]
+                },
+                "dhcpOptions": {
+                  "dnsServers": "[variables('computers')[0].nicIpAddress]"
+                },
+                "subnets": "[variables('virtualNetworkSubnets')]"
+              }
+            }
+          ],
+          "outputs": {}
+          }
+        }
     }
   ]
 }
