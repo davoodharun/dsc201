@@ -244,8 +244,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
-        "provisionServer",
-        "provisionVM"
+        "provisionServer"
       ],
       "properties": {
         "mode": "Incremental",
@@ -279,8 +278,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
-        "provisionNetwork",
-        "provisionConfiguration"
+        "provisionDNS"
       ],
       "properties": {
         "mode": "Incremental",
