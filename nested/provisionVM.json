@@ -119,11 +119,6 @@
               "TypeName": "System.String"
             },
             {
-              "Name": "NodeConfigurationName",
-              "Value": "[parameters('nodeConfigurationName')]",
-              "TypeName": "System.String"
-            },
-            {
               "Name": "ConfigurationMode",
               "Value": "ApplyandAutoCorrect",
               "TypeName": "System.String"
