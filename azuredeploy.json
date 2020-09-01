@@ -116,7 +116,7 @@
         "nicName": "VMNic",
         "publicIPAddressName": "PIPVM",
         "count": "[parameters('vmCount')]",
-        "nicIPAddressStart": "5"
+        "nicIPAddressStart": 5
       }
     },
     "DCName": "DC",
