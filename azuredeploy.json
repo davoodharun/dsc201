@@ -301,7 +301,7 @@
             "value": "[parameters('adminPassword')]"
           },
           "NicName": {
-            "value": "[variables('computers').VM.nicName]"
+            "value": "[variables('computers').DC.nicName]"
           },
           "automationAccountName": {
             "value": "[variables('automationAccountName')]"
@@ -344,13 +344,17 @@
       }
     },
     {
-      "name": "provisionVM",
+      "name": "[concat('provisionVM', copyIndex())]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "dependsOn": [
         "provisionDNS",
         "VMNicAndPip"
       ],
+      "copy": {
+        "name": "vm",
+        "count": "[parameters('vmCount')]"
+      },
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -362,7 +366,7 @@
             "value": "[parameters('location')]"
           },
           "VMName": {
-            "value": "[variables('computers').VM.name]"
+            "value": "[concat(variables('computers').VM.name, copyIndex())]"
           },
           "VMSize": {
             "value": "[parameters('VMSize')]"
@@ -374,7 +378,7 @@
             "value": "[parameters('adminPassword')]"
           },
           "NicName": {
-            "value": "[variables('computers').VM.nicName]"
+            "value": "[concat(variables('computers').VM.nicName, copyIndex())]"
           },
           "automationAccountName": {
             "value": "[variables('automationAccountName')]"
