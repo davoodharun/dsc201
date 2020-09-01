@@ -206,7 +206,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('provisionNetworkURL')]",
+          "uri": "[variables('provisionNicAndPipURL')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
