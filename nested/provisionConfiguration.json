@@ -143,6 +143,19 @@
           }
         },
         {
+          "name": "DomainCredential",
+          "type": "credentials",
+          "apiVersion": "2020-01-13-preview",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[parameters('AutomationAccountName')]"
+          ],
+          "properties": {
+            "userName": "[concat(parameters('domainName'), '\\', parameters('adminUsername'))]",
+            "password": "[parameters('adminPassword')]"
+          }
+        },
+        {
           "name": "[variables('dscConfigurations').DomainControllerConfig.name]",
           "type": "configurations",
           "apiVersion": "2018-06-30",

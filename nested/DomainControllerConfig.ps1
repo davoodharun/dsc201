@@ -65,8 +65,8 @@ Import-DscResource -ModuleName @{ModuleName = 'xPendingReboot'; ModuleVersion = 
 Import-DscResource -ModuleName 'PSDesiredStateConfiguration'
 
 # When using with Azure Automation, modify these values to match your stored credential names
-$domainCredential = Get-AutomationPSCredential 'Credential'
-$safeModeCredential = Get-AutomationPSCredential 'Credential'
+$domainCredential = Get-AutomationPSCredential 'DomainCredential'
+$safeModeCredential = Get-AutomationPSCredential 'DomainCredential'
 
   node localhost
   {
