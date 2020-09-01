@@ -232,7 +232,7 @@
       }
     },
     {
-      "name": "provisionNicAndPipVM",
+      "name": "[concat('provisionNicAndPipVM', copyIndex())]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-06-01",
       "copy": {
